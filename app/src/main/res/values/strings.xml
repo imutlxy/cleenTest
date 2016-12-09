@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">cleenTest</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="http_network_error">网络错误，请重试</string>
+    <string name="actionbar_title">标题栏</string>
+
+</resources>

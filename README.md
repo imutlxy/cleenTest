@@ -1,0 +1,3 @@
+## Cleen笔试题：
+图片加载第三库imagerloader需要从github下载代码,由于网络原因,下载不下来,所以用fresco代替,fresco图片只能
+指定具体宽高或者宽高比,不能使用wrapcontent。用imagerloader则可以实现。

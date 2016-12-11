@@ -37,7 +37,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="10dp"
             android:adjustViewBounds="true"
-            android:scaleType="center"
+            android:scaleType="centerCrop"
             fresco:failureImage="@mipmap/default_avatar"
             fresco:failureImageScaleType="centerCrop"
             fresco:placeholderImage="@mipmap/default_avatar" />

@@ -3,6 +3,7 @@ package cleen.com.lxy.cleentest.main;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
+import android.widget.AbsListView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -15,7 +16,6 @@ import cleen.com.lxy.cleentest.adapter.TestAdapter;
 import cleen.com.lxy.cleentest.moduel.CleenBean;
 import cleen.com.lxy.cleentest.moduel.RowsBean;
 import cleen.com.lxy.cleentest.util.BaseActivity;
-import cleen.com.lxy.cleentest.util.Utils;
 import cleen.com.lxy.cleentest.util.http.CleenHttpClient;
 import cleen.com.lxy.cleentest.util.http.CleenHttpHandler;
 
@@ -32,7 +32,14 @@ public class MainActivity extends BaseActivity {
 
 
     private TestAdapter adapter;
-    private List<RowsBean> rowsBeanList;
+
+    private List<RowsBean> originalRowsBeanList; //全部数据
+    private List<RowsBean> rowsBeanList; //初次加载5条,每刷新一次,增加5条
+
+    private static final int PER_LOAD_COUNT = 2;//上拉加载,每次拉取的数据条目
+
+    private int lastPosition = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +47,15 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        initData();
+
+        setSwipeLayout();
+        setListView();
+
+        getData();
+    }
+
+    private void setSwipeLayout() {
         swipeLayout.setColorSchemeColors(android.R.color.holo_blue_dark, android.R.color.holo_blue_light,
                 android.R.color.holo_green_light, android.R.color.holo_green_light);
         swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -49,18 +65,70 @@ public class MainActivity extends BaseActivity {
                 getData();
             }
         });
+    }
 
-        initData();
+    private void setListView() {
+        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView absListView, int i) {
+                if (absListView.getLastVisiblePosition() == absListView.getCount() - 1) {
+
+                    if (lastPosition > originalRowsBeanList.size() - 1) {
+                        adapter.setIsPullUpEnable(false);
+                        adapter.notifyDataSetChanged();
+                        return;
+                    } else if (lastPosition == originalRowsBeanList.size() - 1) {
+                        rowsBeanList.add(originalRowsBeanList.get(lastPosition));
+                        adapter.setIsPullUpEnable(false);
+                        adapter.setRowsBeans(rowsBeanList);
+                        return;
+                    } else {
+                        int end = lastPosition - 1 + PER_LOAD_COUNT;
+                        if (end <= originalRowsBeanList.size() - 1) {
+                            mLog("[" + lastPosition + "," + end + "]");
+
+                            List<RowsBean> list = getSubList(lastPosition, end);
+                            rowsBeanList.addAll(list);
+                            adapter.setIsPullUpEnable(true);
+                            adapter.setRowsBeans(rowsBeanList);
+                            lastPosition = end + 1;
+                            return;
+                        } else {
+                            mLog("[" + lastPosition + "," + (originalRowsBeanList.size() - 1) + "]");
+
+                            List<RowsBean> list = getSubList(lastPosition, originalRowsBeanList.size() - 1);
+                            rowsBeanList.addAll(list);
+                            adapter.setIsPullUpEnable(false);
+                            adapter.setRowsBeans(rowsBeanList);
+                            lastPosition = originalRowsBeanList.size();
+                            return;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onScroll(AbsListView absListView, int i, int i1, int i2) {
+
+            }
+        });
+
         listView.setAdapter(adapter);
-        getData();
+    }
+
+    private List<RowsBean> getSubList(int startPosition, int endPosition) {
+        List<RowsBean> list = new ArrayList<>();
+        for (int i = startPosition; i <= endPosition; i++)
+            list.add(originalRowsBeanList.get(i));
+        return list;
     }
 
     private void initData() {
         adapter = new TestAdapter(mActivity);
         rowsBeanList = new ArrayList<>();
+        originalRowsBeanList = new ArrayList<>();
     }
 
-    //获取用户列表
     private void getData() {
         String url = "http://thoughtworks-ios.herokuapp.com/facts.json";
         CleenHttpClient.get(mActivity, url, null, new CleenHttpHandler() {
@@ -71,7 +139,12 @@ public class MainActivity extends BaseActivity {
                 swipeLayout.setRefreshing(false);
 
                 CleenBean cleenbean = mActivity.decodeJson(CleenBean.class, responseString);
-                if (cleenbean != null) {
+
+                if (cleenbean == null) {
+                    adapter.setIsPullUpEnable(false);
+                    adapter.notifyDataSetChanged();
+                    return;
+                } else {
                     setData(cleenbean);
                 }
             }
@@ -80,86 +153,6 @@ public class MainActivity extends BaseActivity {
             public void onFailure(int response_status) {
                 mLog("onFailure,response_status=" + response_status);
                 swipeLayout.setRefreshing(false);
-
-                String response = "{\n" +
-                        "  \"title\": \"About Canada\",\n" +
-                        "  \"rows\": [\n" +
-                        "    {\n" +
-                        "      \"title\": \"Beavers\",\n" +
-                        "      \"description\": \"Beavers are second only to humans in their ability to manipulate and change their environment. They can measure up to 1.3 metres long. A group of beavers is called a colony\",\n" +
-                        "      \"imageHref\": \"http://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/American_Beaver.jpg/220px-American_Beaver.jpg\"\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"title\": \"Flag\",\n" +
-                        "      \"description\": null,\n" +
-                        "      \"imageHref\": \"http://images.findicons.com/files/icons/662/world_flag/128/flag_of_canada.png\"\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"title\": \"Transportation\",\n" +
-                        "      \"description\": \"It is a well known fact that polar bears are the main mode of transportation in Canada. They consume far less gas and have the added benefit of being difficult to steal.\",\n" +
-                        "      \"imageHref\": \"http://1.bp.blogspot.com/_VZVOmYVm68Q/SMkzZzkGXKI/AAAAAAAAADQ/U89miaCkcyo/s400/the_golden_compass_still.jpg\"\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"title\": \"Hockey Night in Canada\",\n" +
-                        "      \"description\": \"These Saturday night CBC broadcasts originally aired on radio in 1931. In 1952 they debuted on television and continue to unite (and divide) the nation each week.\",\n" +
-                        "      \"imageHref\": \"http://fyimusic.ca/wp-content/uploads/2008/06/hockey-night-in-canada.thumbnail.jpg\"\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"title\": \"Eh\",\n" +
-                        "      \"description\": \"A chiefly Canadian interrogative utterance, usually expressing surprise or doubt or seeking confirmation.\",\n" +
-                        "      \"imageHref\": null\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"title\": \"Housing\",\n" +
-                        "      \"description\": \"Warmer than you might think.\",\n" +
-                        "      \"imageHref\": \"http://icons.iconarchive.com/icons/iconshock/alaska/256/Igloo-icon.png\"\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"title\": \"Public Shame\",\n" +
-                        "      \"description\": \" Sadly it's true.\",\n" +
-                        "      \"imageHref\": \"http://static.guim.co.uk/sys-images/Music/Pix/site_furniture/2007/04/19/avril_lavigne.jpg\"\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"title\": null,\n" +
-                        "      \"description\": null,\n" +
-                        "      \"imageHref\": null\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"title\": \"Space Program\",\n" +
-                        "      \"description\": \"Canada hopes to soon launch a man to the moon.\",\n" +
-                        "      \"imageHref\": \"http://files.turbosquid.com/Preview/Content_2009_07_14__10_25_15/trebucheta.jpgdf3f3bf4-935d-40ff-84b2-6ce718a327a9Larger.jpg\"\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"title\": \"Meese\",\n" +
-                        "      \"description\": \"A moose is a common sight in Canada. Tall and majestic, they represent many of the values which Canadians imagine that they possess. They grow up to 2.7 metres long and can weigh over 700 kg. They swim at 10 km/h. Moose antlers weigh roughly 20 kg. The plural of moose is actually 'meese', despite what most dictionaries, encyclopedias, and experts will tell you.\",\n" +
-                        "      \"imageHref\": \"http://caroldeckerwildlifeartstudio.net/wp-content/uploads/2011/04/IMG_2418%20majestic%20moose%201%20copy%20(Small)-96x96.jpg\"\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"title\": \"Geography\",\n" +
-                        "      \"description\": \"It's really big.\",\n" +
-                        "      \"imageHref\": null\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"title\": \"Kittens...\",\n" +
-                        "      \"description\": \"�are illegal. Cats are fine.\",\n" +
-                        "      \"imageHref\": \"http://www.donegalhimalayans.com/images/That%20fish%20was%20this%20big.jpg\"\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"title\": \"Mounties\",\n" +
-                        "      \"description\": \"They are the law. They are also Canada's foreign espionage service. Subtle.\",\n" +
-                        "      \"imageHref\": \"http://3.bp.blogspot.com/__mokxbTmuJM/RnWuJ6cE9cI/AAAAAAAAATw/6z3m3w9JDiU/s400/019843_31.jpg\"\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"title\": \"Language\",\n" +
-                        "      \"description\": \"Nous parlons tous les langues importants.\",\n" +
-                        "      \"imageHref\": null\n" +
-                        "    }\n" +
-                        "  ]\n" +
-                        "}";
-                CleenBean cleenBean = mActivity.decodeJson(CleenBean.class,response);
-                if (cleenBean != null) {
-                    setData(cleenBean);
-                }
             }
         });
     }
@@ -173,10 +166,21 @@ public class MainActivity extends BaseActivity {
         }
 
         //设置listview的数据
+        originalRowsBeanList.clear();
         rowsBeanList.clear();
         if (cleenbean != null) {
-            rowsBeanList = cleenbean.getRows();
-            adapter.setRowsBeans(rowsBeanList);
+            originalRowsBeanList = cleenbean.getRows();
+            adapter.setTotalItem(originalRowsBeanList.size());
+            if (originalRowsBeanList.size() > PER_LOAD_COUNT) {
+                lastPosition = PER_LOAD_COUNT;
+                rowsBeanList = getSubList(0, lastPosition - 1);
+                adapter.setIsPullUpEnable(true);
+                mLog("第一次" + "[0" + "," + (lastPosition - 1) + "]");
+            } else {
+                rowsBeanList = originalRowsBeanList;
+                adapter.setIsPullUpEnable(false);
+            }
         }
+        adapter.setRowsBeans(rowsBeanList);
     }
 }

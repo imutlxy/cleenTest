@@ -3,39 +3,50 @@
     xmlns:fresco="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingTop="20dp">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="title" />
-
-    <TextView
-        android:id="@+id/description"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="description" />
-
-    <com.facebook.drawee.view.SimpleDraweeView
-        android:id="@+id/image"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="90dp"
-        android:layout_gravity="center"
-        android:scaleType="center"
-        android:adjustViewBounds="true"
-        android:layout_marginTop="5dp"
-        fresco:failureImage="@mipmap/default_avatar"
-        fresco:failureImageScaleType="centerCrop"
-        fresco:placeholderImage="@mipmap/default_avatar" />
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#4D4D4D"
+            android:textSize="15sp"
+            android:text="title" />
+
+        <TextView
+            android:id="@+id/description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textColor="#707070"
+            android:textSize="13sp"
+            android:text="description" />
+
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:adjustViewBounds="true"
+            android:scaleType="center"
+            fresco:failureImage="@mipmap/default_avatar"
+            fresco:failureImageScaleType="centerCrop"
+            fresco:placeholderImage="@mipmap/default_avatar" />
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
-        android:layout_marginTop="10dp"
-        android:background="#eeeeee" />
+        android:layout_marginTop="20dp"
+        android:background="#ABABAB" />
 
 </LinearLayout>

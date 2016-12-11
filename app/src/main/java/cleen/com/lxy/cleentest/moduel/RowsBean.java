@@ -1,5 +1,7 @@
 package cleen.com.lxy.cleentest.moduel;
 
+import android.text.TextUtils;
+
 /**
  * Created by lxy on 16-12-9.
  */
@@ -37,4 +39,5 @@ public class RowsBean {
     public void setImageHref(String imageHref) {
         this.imageHref = imageHref;
     }
+
 }

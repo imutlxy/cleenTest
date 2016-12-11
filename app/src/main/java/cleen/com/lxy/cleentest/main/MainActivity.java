@@ -36,7 +36,7 @@ public class MainActivity extends BaseActivity {
     private List<RowsBean> originalRowsBeanList; //全部数据
     private List<RowsBean> rowsBeanList; //初次加载5条,每刷新一次,增加5条
 
-    private static final int PER_LOAD_COUNT = 2;//上拉加载,每次拉取的数据条目
+    private static final int PER_LOAD_COUNT = 5;//上拉加载,每次拉取的数据条目
 
     private int lastPosition = 0;
 

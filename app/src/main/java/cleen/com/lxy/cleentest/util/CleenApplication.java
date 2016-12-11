@@ -18,16 +18,6 @@ public class CleenApplication extends Application {
         context = getApplicationContext();
 
         Fresco.initialize(context);
-//        initImageLoader(context);
     }
-
-//    public static void initImageLoader(Context context) {
-//        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
-//                .memoryCacheExtraOptions(640, 640).diskCacheExtraOptions(640, 640, null).memoryCacheSizePercentage(8)
-//                .threadPriority(Thread.NORM_PRIORITY - 2).denyCacheImageMultipleSizesInMemory()
-//                .diskCacheFileNameGenerator(new Md5FileNameGenerator()).tasksProcessingOrder(QueueProcessingType.LIFO)
-//                .build();
-//        ImageLoader.getInstance().init(config);
-//    }
 
 }
